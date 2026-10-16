@@ -1,0 +1,95 @@
+@model IEnumerable<NotaFiscal>
+@{
+    ViewData["Title"] = "Escanear Nota Fiscal";
+}
+<header class="page-header">
+    <h1>Escanear Nota Fiscal</h1>
+    <p>Arraste sua nota fiscal eletrônica, imagem (JPEG/PNG) ou PDF para processamento automático via IA.</p>
+</header>
+
+<section class="scan-layout">
+    <div class="upload-card">
+        <form asp-action="Enviar" method="post" enctype="multipart/form-data" id="uploadForm">
+            @Html.AntiForgeryToken()
+            <input type="file" id="arquivo" name="arquivo" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" hidden />
+            <div class="upload-content" id="dropArea" role="button" tabindex="0" aria-label="Selecionar arquivo para envio">
+                <div class="scan-icon">▧</div>
+                <h2>Arraste o arquivo ou clique para selecionar</h2>
+                <p>Formatos aceitos: PDF, PNG, JPG de até 10MB</p>
+                <button class="primary-button" type="button" id="browseButton">Procurar Arquivo</button>
+                <p id="fileName" class="file-name"></p>
+            </div>
+        </form>
+    </div>
+
+    <aside class="ai-card">
+        <div class="card-title"><span class="ai-icon">⚙</span><h2>Processamento por IA</h2></div>
+        <div class="step"><strong>1. Reconhecimento OCR</strong><p>Leitura digital de caracteres em textos de notas fiscais.</p></div>
+        <div class="step"><strong>2. Extração de Itens</strong><p>Identificação inteligente de cada produto, quantidade e preço.</p></div>
+        <div class="step"><strong>3. Atribuição de Categoria</strong><p>Sugestão automatizada de categorias financeiras para os itens.</p></div>
+        <hr />
+        <p class="manual-note">Se preferir, pule a extração inteligente e insira manualmente.</p>
+        <a class="secondary-button" asp-action="Manual">Lançar Manualmente</a>
+    </aside>
+</section>
+
+<section class="stats">
+    <div class="stat"><span>Notas armazenadas</span><strong>@ViewBag.TotalNotas</strong></div>
+    <div class="stat"><span>Compras cadastradas</span><strong>@ViewBag.TotalCompras</strong></div>
+    <div class="stat"><span>Total registrado</span><strong>@(((decimal)ViewBag.TotalGasto).ToString("C", new System.Globalization.CultureInfo("pt-BR")))</strong></div>
+</section>
+
+<section class="recent">
+    <div class="section-heading"><h2>Notas enviadas recentemente</h2><a asp-action="Lista">Ver todas</a></div>
+    @if (!Model.Any())
+    {
+        <p class="empty-state">Nenhuma nota fiscal enviada ainda. Selecione um arquivo acima para começar.</p>
+    }
+    else
+    {
+        <div class="table-wrap"><table>
+            <thead><tr><th>Arquivo</th><th>Data do envio</th><th>Tamanho</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var nota in Model)
+            {
+                <tr>
+                    <td>@nota.NomeArquivo</td>
+                    <td>@nota.DataEnvio.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@((nota.TamanhoBytes / 1024.0).ToString("N0")) KB</td>
+                    <td><span class="status">@nota.StatusProcessamento</span></td>
+                    <td><a asp-action="Abrir" asp-route-id="@nota.Id" target="_blank">Abrir</a></td>
+                </tr>
+            }
+            </tbody>
+        </table></div>
+    }
+</section>
+
+@section Scripts {
+<script>
+const input = document.getElementById('arquivo');
+const dropArea = document.getElementById('dropArea');
+const browseButton = document.getElementById('browseButton');
+const fileName = document.getElementById('fileName');
+const form = document.getElementById('uploadForm');
+
+browseButton.addEventListener('click', e => { e.stopPropagation(); input.click(); });
+dropArea.addEventListener('click', e => { if (e.target !== browseButton) input.click(); });
+dropArea.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+input.addEventListener('change', () => showFile(input.files[0]));
+function showFile(file) {
+    if (!file) return;
+    fileName.textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+    if (file.size > 10 * 1024 * 1024) { alert('O arquivo deve ter no máximo 10 MB.'); input.value = ''; fileName.textContent = ''; return; }
+    form.requestSubmit();
+}
+['dragenter','dragover'].forEach(evt => dropArea.addEventListener(evt, e => { e.preventDefault(); dropArea.classList.add('dragging'); }));
+['dragleave','drop'].forEach(evt => dropArea.addEventListener(evt, e => { e.preventDefault(); dropArea.classList.remove('dragging'); }));
+dropArea.addEventListener('drop', e => {
+    const files = e.dataTransfer.files;
+    if (files.length) {
+        const transfer = new DataTransfer(); transfer.items.add(files[0]); input.files = transfer.files; showFile(files[0]);
+    }
+});
+</script>
+}

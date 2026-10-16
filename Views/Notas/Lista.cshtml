@@ -1,0 +1,12 @@
+@model IEnumerable<NotaFiscal>
+@{ ViewData["Title"] = "Lista de Gastos"; }
+<header class="page-header"><h1>Notas Fiscais e Compras</h1><p>Consulte os arquivos enviados e as compras registradas.</p></header>
+<div class="section-heading"><h2>Notas armazenadas</h2><a class="primary-button link-button" asp-action="Index">Enviar nova nota</a></div>
+<div class="table-wrap"><table>
+<thead><tr><th>Arquivo</th><th>Data de envio</th><th>Status</th><th>Compra vinculada</th><th>Arquivo</th></tr></thead>
+<tbody>
+@foreach (var n in Model)
+{
+<tr><td>@n.NomeArquivo</td><td>@n.DataEnvio.ToString("dd/MM/yyyy HH:mm")</td><td><span class="status">@n.StatusProcessamento</span></td><td>@(n.Compra?.Descricao ?? "Não vinculada")</td><td><a asp-action="Abrir" asp-route-id="@n.Id" target="_blank">Abrir</a></td></tr>
+}
+</tbody></table></div>

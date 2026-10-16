@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Itemiza</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <a class="brand" asp-controller="Notas" asp-action="Index">
+            <span class="brand-icon">◇</span>
+            <span><strong>Itemiza</strong><small>SISTEMA DE GASTOS</small></span>
+        </a>
+        <nav class="menu">
+            <a asp-controller="Notas" asp-action="Index"><span>⌂</span>Painel Inicial</a>
+            <a asp-controller="Notas" asp-action="Lista"><span>⊗</span>Lista de Gastos</a>
+            <a asp-controller="Notas" asp-action="Manual"><span>▱</span>Gestão de Contextos</a>
+            <a class="active" asp-controller="Notas" asp-action="Index"><span>▧</span>Escanear Nota Fiscal</a>
+        </nav>
+        <div class="profile">
+            <div class="avatar">IM</div>
+            <div><strong>Usuário Itemiza</strong><small>usuario@email.com</small></div>
+            <span class="settings">⚙</span>
+        </div>
+    </aside>
+    <main class="main-content">
+        @if (TempData["Sucesso"] != null) { <div class="alert success">@TempData["Sucesso"]</div> }
+        @if (TempData["Erro"] != null) { <div class="alert error">@TempData["Erro"]</div> }
+        @RenderBody()
+    </main>
+</div>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
